@@ -15,8 +15,7 @@ class Tarla:
     sayac = 0
     renk0 = "royal blue"
     renk1 = "gainsboro"
-    renk2 = "firebrick4"
-    durum = 0
+    renk2 = "firebrick3"
     def d_sor(self):
         return int(input("dikey: ")) - 1
         
@@ -50,13 +49,6 @@ class Tarla:
                 tarla.append(self.bm_knt(c))
             c += 1
         print(tarla)
-    def bayrak(self,menubar):
-        if self.durum == 0:
-            self.durum = 1
-            menubar.entryconfig(menubar.index("bomb"),label = "flag")
-        else:
-            self.durum = 0
-            menubar.entryconfig(menubar.index("flag"), label="bomb")
 
     def __init__(self,boyut,mayın,master):
         self.master = master
@@ -66,8 +58,7 @@ class Tarla:
         self.dt_yap()
         self.mt_yap()
         menubar = tk.Menu(master)
-        menubar.add_command(label = "bomb")
-        menubar.entryconfig(menubar.index("bomb"), command=lambda: self.bayrak(menubar))
+        menubar.add_command(label = "retry",command = lambda:self.tekrar())
         master.config(menu = menubar)
         for x in range(boyut):
             for y in range(boyut):
@@ -76,8 +67,16 @@ class Tarla:
                 b = buton.grid_info()
                 self.b_tarla.append([b["row"],b["column"]])
                 buton["command"] = lambda r = b["row"], c = b["column"]:self.buton_hamle((r*boyut)+c,r,c)
+                buton.bind(sequence ="<Button-3>",func=lambda event,r = b["row"], c = b["column"]:self.bayrak(event,r,c))
         print(master.grid_slaves())
 
+    def bayrak(self,event,row,column):
+        if self.d_tarla[row*self.boyut + column] == "///":
+            l = self.master.grid_slaves(row=row, column=column)
+            if l[0]["text"] == "XXXXX":
+                l[0].configure(text="")
+            else:
+                l[0].configure(text="XXXXX", fg="red3", font=font.Font(size=9, weight="bold"))
                 
     def t_yaz(self,tarla):
         print()
@@ -135,6 +134,7 @@ class Tarla:
         if self.bm_yer(konum) == "orta":
             bom = t[k+1] + t[k-1] + t[k+b] + t[k-b] + t[k+b+1] + t[k+b-1] + t[k-b+1] + t[k-b-1]
         return(bom)
+
     def b_yer(self,konum):
         l =[]
         liste = []
@@ -145,19 +145,16 @@ class Tarla:
             l.append(k+b)
             l.append(k+b-1)
         if self.bm_yer(konum) == "sa_alt":
-
             l.append(k-1)
             l.append(k-b)
             l.append(k-b-1)
         if self.bm_yer(konum) == "sa_orta":
-
             l.append(k-1)
             l.append(k-b)
             l.append(k+b)
             l.append(k+b-1)
             l.append(k-b-1)
         if self.bm_yer(konum) == "so_üst":
-
             l.append(k + 1)
             l.append(k + b)
             l.append(k + b + 1)
@@ -166,14 +163,12 @@ class Tarla:
             l.append(k-b)
             l.append(k - b + 1)
         if self.bm_yer(konum) == "so_orta":
-
             l.append(k + 1)
             l.append(k + b)
             l.append(k - b)
             l.append(k + b + 1)
             l.append(k - b + 1)
         if self.bm_yer(konum) == "üst":
-
             l.append(k + 1)
             l.append(k - 1)
             l.append(k + b)
@@ -206,10 +201,7 @@ class Tarla:
             return(False)
         else:
             t2[konum] = " " + str(self.bm_knt(konum)) + " "
-
             return(True)
-
-
 
     def tekrar(self):
         self.d_tarla = []
@@ -220,15 +212,15 @@ class Tarla:
         self.dt_yap()
         self.mt_yap()
         self.sayac = 0
-        for x in self.master.grid_slaves():
-            x.destroy()
-        for x in range(boyut):
-            for y in range(boyut):
-                buton = tk.Button(self.master,width = 5,height=2,bg = self.renk0)
+        for x in range(self.boyut):
+            for y in range(self.boyut):
+                buton = tk.Button(master,width = 5,height=2,bg = self.renk0)
                 buton.grid(row = x,column = y)
                 b = buton.grid_info()
                 self.b_tarla.append([b["row"],b["column"]])
-                buton["command"] = lambda r = b["row"], c = b["column"]:self.buton_hamle((r*boyut)+c,r,c)
+                buton["command"] = lambda r = b["row"], c = b["column"]:self.buton_hamle((r*self.boyut)+c,r,c)
+                buton.bind(sequence ="<Button-3>",func=lambda event,r = b["row"], c = b["column"]:self.bayrak(event,r,c))
+        print(master.grid_slaves())
 
     def say(self):
         self.sayac = 0
@@ -238,13 +230,25 @@ class Tarla:
 
     def b_hamle(self,konum,row,column):
         knt = 0
+        renk = ""
         if self.hamle(konum):
             bm = self.bm_knt(konum)
             if  bm == 0:
+                renk ="black"
                 knt = " "
-            else:
+            elif bm == 1:
                 knt = bm
-            tk.Label(self.master,text = knt,width = 5,height=2,bg = self.renk1,padx = 2,pady = 2).grid(row = row,column = column)
+                renk = "medium blue"
+            elif bm == 2:
+                knt = bm
+                renk = "dark green"
+            elif bm == 3:
+                knt = bm
+                renk = "red4"
+            else:
+                renk ="black"
+                knt = bm
+            tk.Label(self.master,text = knt,width = 5,height=2,bg = self.renk1,padx = 2,pady = 2,fg =renk,font = font.Font(size = 9,weight ="bold")).grid(row = row,column = column)
             self.say()
             if self.sayac == self.boyut**2 - self.mayın:
                 if messagebox.askretrycancel("","Victory"):
@@ -259,24 +263,17 @@ class Tarla:
                 sys.exit()
 
     def buton_hamle(self,konum,row,column):
-        if self.durum == 0:
-            hamle = self.hamle(konum)
-            t = self.b_tarla
-            if not self.i_tarla[konum]:
-                if self.bm_knt(konum) == 0:
-                    self.b_hamle(konum,row,column)
-                    for x in self.b_yer(konum):
-                        self.buton_hamle(x, t[x][0], t[x][1])
-                else:
-                    self.b_hamle(konum,row,column)
+        hamle = self.hamle(konum)
+        t = self.b_tarla
+        if not self.i_tarla[konum]:
+            if self.bm_knt(konum) == 0:
+                self.b_hamle(konum,row,column)
+                for x in self.b_yer(konum):
+                    self.buton_hamle(x, t[x][0], t[x][1])
             else:
                 self.b_hamle(konum,row,column)
         else:
-            l = master.grid_slaves(row = row,column = column)
-            if l[0]["text"] =="XXXXX":
-                l[0].configure(text="")
-            else:
-                l[0].configure(text = "XXXXX",fg = "red3",font =font.Font(size =9,weight = "bold"))
+            self.b_hamle(konum,row,column)
 
     def g_yaz(self):
         print()
@@ -304,19 +301,15 @@ class Tarla:
                 print("\nkazandın")
                 break
         self.g_yaz()
-        
+
 master = tk.Tk()
 master.title("Minesweeper")
 boyut = int(input("boyut: "))
 mayın = int(input("mayın sayısı: "))
 tarla = Tarla(boyut,mayın,master)
-
-
 master.mainloop()
-while True:
-    if input("tekrar"):
-        tarla.tekrar()
-    
+
+
     
     
     
