@@ -50,25 +50,40 @@ class Tarla:
             c += 1
         print(tarla)
 
-    def __init__(self,boyut,mayın,master):
+    def ayar(self):
+        tplvl = tk.Toplevel()
+        self.toplevel = tplvl
+        tplvl.protocol("WM_DELETE_WINDOW", tplvl.withdraw)
+        l1 = tk.Label(tplvl, text="size")
+        l1.grid(row=0, column=0)
+        e1 = tk.Entry(tplvl, width=10)
+        e1.grid(row=0, column=1)
+        l2 = tk.Label(tplvl, text="mines")
+        l2.grid(row=1, column=0)
+        e2 = tk.Entry(tplvl, width=10)
+        e2.grid(row=1, column=1)
+        b1 = tk.Button(tplvl, text="confirm", width=10, command=lambda: self.confirm(e1, e2, tplvl))
+        b1.grid(row=2, column=0)
+        b2 = tk.Button(tplvl, text="cancel", width=10, command=lambda: self.cancel(tplvl))
+        b2.grid(row=2, column=1)
+        tplvl.mainloop()
+
+    def __init__(self,master):
         self.master = master
-        self.boyut = boyut
-        self.mayın = mayın
-        self.it_yap()
-        self.dt_yap()
-        self.mt_yap()
-        menubar = tk.Menu(master)
-        menubar.add_command(label = "retry",command = lambda:self.tekrar())
-        master.config(menu = menubar)
-        for x in range(boyut):
-            for y in range(boyut):
-                buton = tk.Button(master,width = 5,height=2,bg = self.renk0)
-                buton.grid(row = x,column = y)
-                b = buton.grid_info()
-                self.b_tarla.append([b["row"],b["column"]])
-                buton["command"] = lambda r = b["row"], c = b["column"]:self.buton_hamle((r*boyut)+c,r,c)
-                buton.bind(sequence ="<Button-3>",func=lambda event,r = b["row"], c = b["column"]:self.bayrak(event,r,c))
-        print(master.grid_slaves())
+        self.ayar()
+
+    def confirm(self,e1,e2,toplevel):
+        b = e1.get()
+        m = e2.get()
+        print(b, m)
+        if int(b) != 0 and int(m) != 0:
+            self.boyut = int(b)
+            self.mayın = int(m)
+            self.tekrar()
+            toplevel.withdraw()
+
+    def cancel(self,toplevel):
+        toplevel.withdraw()
 
     def bayrak(self,event,row,column):
         if self.d_tarla[row*self.boyut + column] == "///":
@@ -88,6 +103,7 @@ class Tarla:
                 print()
 
     def bm_yer(self,konum):
+        boyut = self.boyut
         konum += 1
         if konum % boyut == 0 and konum != 1:
             if konum == boyut:
@@ -211,16 +227,23 @@ class Tarla:
         self.it_yap()
         self.dt_yap()
         self.mt_yap()
+        menubar = tk.Menu(self.master)
+        menubar.add_command(label="options", command=lambda: self.toplevel.deiconify())
+        menubar.add_command(label="retry", command=lambda: self.tekrar())
+        self.master.config(menu=menubar)
         self.sayac = 0
+        for x in self.master.grid_slaves():
+            x.destroy()
+
         for x in range(self.boyut):
             for y in range(self.boyut):
-                buton = tk.Button(master,width = 5,height=2,bg = self.renk0)
+                buton = tk.Button(self.master,width = 5,height=2,bg = self.renk0)
                 buton.grid(row = x,column = y)
                 b = buton.grid_info()
                 self.b_tarla.append([b["row"],b["column"]])
                 buton["command"] = lambda r = b["row"], c = b["column"]:self.buton_hamle((r*self.boyut)+c,r,c)
                 buton.bind(sequence ="<Button-3>",func=lambda event,r = b["row"], c = b["column"]:self.bayrak(event,r,c))
-        print(master.grid_slaves())
+        print(self.master.grid_slaves())
 
     def say(self):
         self.sayac = 0
@@ -302,11 +325,40 @@ class Tarla:
                 break
         self.g_yaz()
 
+class Ayarlar:
+    def __init__(self,tarla,master):
+        self.master = master
+        self.tarla = tarla
+        tplvl = tk.Toplevel()
+        tplvl.protocol("WM_DELETE_WINDOW",tplvl.withdraw)
+        l1 = tk.Label(tplvl,text="size")
+        l1.grid(row = 0,column = 0)
+        e1 = tk.Entry(tplvl,width = 10)
+        e1.grid(row = 0,column = 1)
+        l2 = tk.Label(tplvl,text="mines")
+        l2.grid(row = 1,column = 0)
+        e2 = tk.Entry(tplvl,width = 10)
+        e2.grid(row = 1,column = 1)
+        b1 = tk.Button(tplvl,text = "confirm",width = 10,command = lambda:self.confirm(e1,e2,tplvl))
+        b1.grid(row = 2,column = 0)
+        b2 = tk.Button(tplvl,text = "cancel",width = 10,command = lambda:self.cancel(tplvl))
+        b2.grid(row = 2,column = 1)
+        tplvl.mainloop()
+
+    def confirm(self,e1,e2,toplevel):
+        b = e1.get()
+        m = e2.get()
+        print(b,m)
+        if  int(b) != 0 and int(m) != 0:
+            self.tarla.tekrar(int(b),int(m))
+            toplevel.withdraw()
+
+    def cancel(self,toplevel):
+        toplevel.withdraw()
+
 master = tk.Tk()
 master.title("Minesweeper")
-boyut = int(input("boyut: "))
-mayın = int(input("mayın sayısı: "))
-tarla = Tarla(boyut,mayın,master)
+tarla = Tarla(master)
 master.mainloop()
 
 
